@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Nertia</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#f4f4f8" id="theme-color-meta">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" id="status-bar-meta">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HOME ────────────────────────────────────────────────────────── -->
+  <div id="view-home" class="view active">
+
+    <!-- Section 1: Greeting -->
+    <div id="home-top">
+      <div id="home-greeting"></div>
+    </div>
+
+    <!-- Section 2: Chat response + input -->
+    <div id="home-middle">
+      <div id="home-chat-area">
+        <div id="mic-response" class="mic-response"></div>
+        <div id="home-chat" class="home-chat empty"></div>
+      </div>
+      <div id="home-input-wrap">
+        <div id="home-input-bar">
+          <input type="text" id="home-text-input" placeholder="How can I help?" autocomplete="off">
+          <button id="home-text-send" aria-label="Send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Menu -->
+    <div id="home-bottom">
+      <button id="menu-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="32" height="32">
+          <line x1="4" y1="8" x2="20" y2="8"/>
+          <line x1="4" y1="14" x2="20" y2="14"/>
+          <line x1="4" y1="20" x2="20" y2="20"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- hidden compat elements -->
+    <div id="home-alex-panel" style="display:none">
+      <input id="alex-help-input" style="display:none">
+      <button id="alex-help-send" style="display:none"></button>
+      <div id="alex-help-status" style="display:none"></div>
+    </div>
+    <div id="home-sched-panel" style="display:none"><div id="home-sched-list"></div></div>
+    <div id="greeting-card" class="hidden" style="display:none"></div>
+    <div id="home-mic-wrap" style="display:none"></div>
+  </div>
+
+  <!-- ── HISTORY ──────────────────────────────────────────────────────── -->
+  <div id="view-history" class="view">
+    <div class="view-bar">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="view-title">History</span>
+      <button id="history-search-btn" class="view-mic-btn" aria-label="Search history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" data-tab="meal">Diet</button>
+      <button class="sub-tab" data-tab="fitness">Workouts</button>
+      <button class="sub-tab" data-tab="mood">Mood</button>
+      <button class="sub-tab" id="tab-health" data-tab="health" style="display:none">Health</button>
+    </div>
+
+    <div id="hist-tab-fitness" class="hist-tab">
+      <div class="log-form">
+        <input id="workout-text" type="text" placeholder="e.g. 5km run, bench press 3×10">
+        <div class="log-row">
+          <input id="workout-duration" type="number" placeholder="min" min="1">
+          <input id="workout-distance" type="number" placeholder="km" step="0.1">
+          <input id="workout-cal" type="number" placeholder="kcal">
+        </div>
+        <div class="photo-row">
+          <label class="photo-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Photo <input type="file" accept="image/*" capture="environment" id="workout-photo" hidden>
+          </label>
+          <span id="workout-photo-label" class="photo-label"></span>
+        </div>
+        <button class="log-submit" id="workout-submit">Log Workout</button>
+      </div>
+      <div id="fitness-history"></div>
+    </div>
+
+    <div id="hist-tab-meal" class="hist-tab active">
+      <div style="display:flex;justify-content:flex-end;padding:8px 16px 0">
+        <button id="diet-settings-btn" class="inline-btn" style="font-size:11px;display:flex;align-items:center;gap:4px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Diet Settings
+        </button>
+      </div>
+      <div class="log-form">
+        <input id="meal-text" type="text" placeholder="e.g. Grilled chicken with rice">
+        <div class="log-row">
+          <input id="meal-date" type="date" class="add-task-select" style="flex:1">
+          <input id="meal-time" type="time" class="add-task-select" style="flex:1">
+        </div>
+        <div class="photo-row">
+          <label class="photo-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Photo <input type="file" accept="image/*" capture="environment" id="meal-photo" hidden>
+          </label>
+          <span id="meal-photo-label" class="photo-label"></span>
+        </div>
+        <div id="meal-nutrition-preview" class="nutrition-preview hidden"></div>
+        <button class="log-submit" id="meal-submit">Log Meal</button>
+      </div>
+      <button id="meal-insights-btn" class="meal-insights-btn">View Food Insights</button>
+      <div id="meal-insights-panel" class="meal-insights-panel hidden">
+        <div id="calorie-bar" class="calorie-bar">
+          <div class="calorie-bar-header">
+            <span class="calorie-bar-total" id="cal-bar-total">— kcal</span>
+            <span class="calorie-bar-label">today</span>
+          </div>
+          <div class="calorie-bar-macros">
+            <div class="macro-pill">P <span id="cal-bar-protein">—</span>g</div>
+            <div class="macro-pill">C <span id="cal-bar-carbs">—</span>g</div>
+            <div class="macro-pill">F <span id="cal-bar-fat">—</span>g</div>
+            <div class="macro-pill" id="cal-bar-count" style="color:var(--muted)"></div>
+          </div>
+        </div>
+      </div>
+      <div id="meal-history"></div>
+    </div>
+
+    <div id="hist-tab-mood" class="hist-tab">
+      <div class="log-form">
+        <div class="mood-slider-row">
+          <span class="mood-emoji" id="mood-emoji">🙂</span>
+          <input type="range" id="mood-score" min="1" max="10" value="7">
+          <span class="mood-score-label" id="mood-score-label">7</span>
+        </div>
+        <div class="field-label">Energy level</div>
+        <div class="energy-btns">
+          <button class="energy-btn" data-energy="low">Low</button>
+          <button class="energy-btn active" data-energy="medium">Medium</button>
+          <button class="energy-btn" data-energy="high">High</button>
+        </div>
+        <div class="field-label">How are you feeling?</div>
+        <div class="emotion-chips">
+          <button class="chip" data-emotion="happy">😊 Happy</button>
+          <button class="chip" data-emotion="grateful">🙏 Grateful</button>
+          <button class="chip" data-emotion="motivated">⚡ Motivated</button>
+          <button class="chip" data-emotion="calm">😌 Calm</button>
+          <button class="chip" data-emotion="content">🙂 Content</button>
+          <button class="chip" data-emotion="tired">😴 Tired</button>
+          <button class="chip" data-emotion="anxious">😟 Anxious</button>
+          <button class="chip" data-emotion="stressed">😤 Stressed</button>
+          <button class="chip" data-emotion="sad">😔 Sad</button>
+          <button class="chip" data-emotion="frustrated">😠 Frustrated</button>
+        </div>
+        <input id="mood-notes" type="text" placeholder="Notes (optional)">
+        <button class="log-submit" id="mood-submit">Log Mood</button>
+      </div>
+      <div id="mood-history"></div>
+    </div>
+
+
+    <div id="hist-tab-health" class="hist-tab">
+      <div class="log-form">
+        <select id="cycle-event-type" class="form-select">
+          <option value="period_start">Period Start</option>
+          <option value="period_end">Period End</option>
+          <option value="symptom">Log Symptom</option>
+          <option value="ovulation">Ovulation</option>
+        </select>
+        <input id="cycle-notes" type="text" placeholder="Notes (optional)">
+        <button class="log-submit" id="cycle-submit">Log</button>
+      </div>
+      <div id="health-history"><div class="empty-state">No health entries yet.</div></div>
+    </div>
+  </div>
+
+  <!-- ── CURRENT ──────────────────────────────────────────────────────── -->
+  <div id="view-current" class="view">
+    <div class="view-bar">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="view-title">Current</span>
+      <div class="view-bar-actions">
+        <button id="current-add-btn" class="icon-btn" aria-label="Add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" width="18" height="18">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" data-tab="tasks">Tasks</button>
+      <button class="sub-tab" data-tab="goals">Goals</button>
+      <button class="sub-tab" data-tab="recurring">Recurring</button>
+    </div>
+    <div id="curr-tab-tasks" class="curr-tab active">
+      <div class="user-filter-row">
+        <button class="user-filter-btn active" data-view-user="mine">Mine</button>
+        <button class="user-filter-btn" data-view-user="all">Everyone</button>
+      </div>
+      <div class="filter-row">
+        <select id="bucket-filter"><option value="">All goals</option></select>
+        <select id="status-filter">
+          <option value="todo">To do</option>
+          <option value="in_progress">In progress</option>
+          <option value="">All</option>
+        </select>
+      </div>
+      <div id="add-task-form" class="add-task-form hidden">
+        <div class="add-task-mode-tabs">
+          <button class="add-mode-tab active" data-mode="single">Single</button>
+          <button class="add-mode-tab" data-mode="bulk">Bulk / Paste</button>
+        </div>
+        <!-- Single task mode -->
+        <div id="add-single" class="add-mode active">
+          <input id="new-task-title" type="text" placeholder="Task title" class="add-task-input">
+          <div class="add-task-row">
+            <select id="new-task-bucket" class="add-task-select" aria-label="Goal">
+              <option value="" disabled selected>— Select a goal —</option>
+              <option value="Now">Now</option>
+            </select>
+            <select id="new-task-priority" class="add-task-select">
+              <option value="1">P1</option>
+              <option value="2">P2</option>
+              <option value="3" selected>P3</option>
+              <option value="4">P4</option>
+              <option value="5">P5</option>
+            </select>
+            <input id="new-task-due" type="date" class="add-task-select">
+          </div>
+          <textarea id="new-task-description" placeholder="Notes, context, or details…" class="add-task-input" rows="2" style="resize:vertical;margin-top:4px"></textarea>
+          <div class="add-task-row" style="margin-top:4px">
+            <input id="new-task-est-minutes" type="number" placeholder="Est. min" class="add-task-select" min="1" style="flex:1">
+            <select id="new-task-energy" class="add-task-select" style="flex:1">
+              <option value="">Energy</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <input id="new-task-tags" type="text" placeholder="Tags (comma-separated)" class="add-task-select" style="flex:2">
+          </div>
+          <div class="add-task-row">
+            <button id="add-task-submit" class="add-task-btn">Add</button>
+            <button id="add-task-cancel" class="add-task-btn-cancel">Cancel</button>
+          </div>
+        </div>
+        <!-- Bulk task mode -->
+        <div id="add-bulk" class="add-mode">
+          <textarea id="bulk-task-text" class="bulk-task-textarea" rows="6" placeholder="Paste a list of tasks (one per line)&#10;&#10;Examples:&#10;Buy groceries&#10;Call dentist&#10;Finish report by Friday"></textarea>
+          <div class="add-task-row">
+            <select id="bulk-task-bucket" class="add-task-select">
+              <option value="Now">Now</option>
+            </select>
+            <select id="bulk-task-priority" class="add-task-select">
+              <option value="1">P1</option>
+              <option value="2">P2</option>
+              <option value="3" selected>P3</option>
+              <option value="4">P4</option>
+              <option value="5">P5</option>
+            </select>
+          </div>
+          <div class="add-task-row">
+            <button id="bulk-task-submit" class="add-task-btn">Add All</button>
+            <button id="bulk-task-cancel" class="add-task-btn-cancel">Cancel</button>
+          </div>
+          <div id="bulk-task-status" class="bulk-status"></div>
+        </div>
+      </div>
+      <!-- add-task-toggle is the + button in view-bar now -->
+      <div id="tasks-list"></div>
+    </div>
+    <div id="curr-tab-goals" class="curr-tab">
+      <div id="add-goal-form" class="add-task-form hidden" style="margin:12px 16px 0">
+        <input id="new-goal-name" type="text" placeholder="Goal name (e.g. Health, Career, Marriage &amp; Faith)" class="add-task-input">
+        <textarea id="new-goal-desc" placeholder="What does success look like?" class="add-task-input" rows="2" style="resize:vertical;margin-top:6px"></textarea>
+        <div class="add-task-row" style="margin-top:6px">
+          <select id="new-goal-priority" class="add-task-select" style="flex:0 0 auto">
+            <option value="1">P1 — Top priority</option>
+            <option value="2">P2 — High</option>
+            <option value="3" selected>P3 — Normal</option>
+            <option value="4">P4 — Low</option>
+          </select>
+          <button id="add-goal-submit" class="add-task-btn">Create</button>
+          <button id="add-goal-cancel" class="add-task-btn-cancel">Cancel</button>
+        </div>
+      </div>
+      <div id="goals-list"></div>
+    </div>
+    <div id="curr-tab-recurring" class="curr-tab">
+      <div style="padding:12px 16px 0;display:flex;align-items:center;justify-content:space-between">
+        <span class="settings-label" style="padding:0;margin:0">Daily Routine</span>
+        <button id="curr-add-routine-btn" class="inline-btn" style="font-size:11px">+ Add</button>
+      </div>
+      <div id="curr-routine-list" style="padding:0 16px"></div>
+      <div style="padding:16px 16px 0;display:flex;align-items:center;justify-content:space-between">
+        <span class="settings-label" style="padding:0;margin:0">Recurring Tasks</span>
+        <button id="curr-add-recurring-btn" class="inline-btn" style="font-size:11px">+ Add</button>
+      </div>
+      <div id="curr-recurring-list" style="padding:0 16px"></div>
+    </div>
+  </div>
+
+  <!-- ── UPCOMING ─────────────────────────────────────────────────────── -->
+  <div id="view-upcoming" class="view">
+    <div class="view-bar">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="view-title">Upcoming</span>
+      <button class="view-mic-btn" aria-label="Voice command">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>
+      </button>
+    </div>
+    <div class="sub-tabs" id="sched-tabs">
+      <button class="sub-tab active" data-tab="day">Day</button>
+      <button class="sub-tab" data-tab="week">Week</button>
+      <button class="sub-tab" data-tab="month">Month</button>
+    </div>
+    <!-- Day view -->
+    <div id="sched-day" class="sched-view active">
+      <div class="view-nav-row">
+        <button id="sched-prev" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span id="sched-date"></span>
+        <button id="sched-next" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;padding:0 16px 4px">
+        <button id="add-cal-event-btn" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add event
+        </button>
+      </div>
+      <div id="schedule-list"></div>
+    </div>
+    <!-- Week view -->
+    <div id="sched-week" class="sched-view">
+      <div class="view-nav-row">
+        <button id="week-prev" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span id="week-label"></span>
+        <button id="week-next" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div id="week-grid" class="week-grid"></div>
+    </div>
+    <!-- Month view -->
+    <div id="sched-month" class="sched-view">
+      <div class="month-header">
+        <button id="month-prev" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span id="month-label"></span>
+        <button id="month-next" class="nav-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div id="month-grid" class="month-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ─────────────────────────────────────────────────────── -->
+  <div id="view-settings" class="view">
+    <div class="view-bar">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="view-title">Settings</span>
+      <button class="view-mic-btn" aria-label="Voice command">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>
+      </button>
+    </div>
+    <div id="settings-content">
+
+      <div class="settings-section">
+        <div class="settings-label">Account</div>
+        <div class="setting-row">
+          <span>Active Profile</span>
+          <select id="user-switcher" class="inline-select">
+            <!-- populated dynamically from /api/users -->
+          </select>
+        </div>
+        <div class="setting-row">
+          <span>Switch Profile</span>
+          <button id="switch-profile-btn" class="inline-btn">Switch</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Appearance</div>
+        <div class="setting-row">
+          <span>Dark Mode</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-darkmode">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>12-Hour Time</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-12h" checked>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Location &amp; Weather</div>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+          <span style="font-size:13px">City</span>
+          <div style="display:flex;gap:8px;width:100%">
+            <input type="text" id="weather-city-input" class="add-task-input" placeholder="e.g. Chicago, IL" style="flex:1;padding:7px 10px;font-size:13px">
+            <button id="weather-city-save" class="add-task-btn" style="flex-shrink:0;padding:7px 14px">Save</button>
+          </div>
+          <div id="weather-city-status" style="font-size:11px;color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Voice Assistant</div>
+        <div class="setting-row">
+          <span>Speak Responses</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-tts" checked>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>Auto Check-in After Logging</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-checkin" checked>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>Voice</span>
+          <select id="setting-voice" class="inline-select" style="max-width:160px"></select>
+        </div>
+        <div class="setting-row">
+          <span>Speed</span>
+          <select id="setting-tts-speed" class="inline-select">
+            <option value="0.80">Slow</option>
+            <option value="0.90" selected>Normal</option>
+            <option value="1.00">Fast</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Privacy &amp; Sharing</div>
+        <div id="sharing-content"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Features</div>
+        <div class="setting-row">
+          <span>Show Schedule on Home</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-show-schedule" checked>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div id="feature-toggles"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Quick Commands</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Customize the shortcut buttons shown on the home screen. Up to 4 per time slot.</div>
+        <div id="quick-cmd-editor">
+          <div class="quick-cmd-slot" data-slot="morning"><div class="settings-sublabel">Morning (before 10am)</div><div class="quick-cmd-chips-edit"></div><button class="quick-cmd-add inline-btn" style="margin-top:4px;font-size:11px">+ Add</button></div>
+          <div class="quick-cmd-slot" data-slot="midday" style="margin-top:10px"><div class="settings-sublabel">Midday (10am–2pm)</div><div class="quick-cmd-chips-edit"></div><button class="quick-cmd-add inline-btn" style="margin-top:4px;font-size:11px">+ Add</button></div>
+          <div class="quick-cmd-slot" data-slot="afternoon" style="margin-top:10px"><div class="settings-sublabel">Afternoon (2pm–6pm)</div><div class="quick-cmd-chips-edit"></div><button class="quick-cmd-add inline-btn" style="margin-top:4px;font-size:11px">+ Add</button></div>
+          <div class="quick-cmd-slot" data-slot="evening" style="margin-top:10px"><div class="settings-sublabel">Evening (after 6pm)</div><div class="quick-cmd-chips-edit"></div><button class="quick-cmd-add inline-btn" style="margin-top:4px;font-size:11px">+ Add</button></div>
+        </div>
+        <button id="quick-cmd-reset" class="inline-btn" style="margin-top:12px;background:var(--surface2);color:var(--muted);font-size:11px">Reset to defaults</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Vitamins &amp; Supplements</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">The scheduler will suggest optimal reminder times based on each supplement's timing preference.</div>
+        <div id="supplements-list"></div>
+        <button id="add-supplement-btn" class="inline-btn" style="margin-top:8px">+ Add supplement</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Routine &amp; Recurring</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Manage your daily routine and recurring tasks in Current → Recurring.</div>
+        <button class="inline-btn" id="goto-recurring-btn" style="font-size:12px">Open Recurring tab →</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-label">Stats</div>
+        <div class="filter-row" style="padding:0 0 10px">
+          <select id="period-select">
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+          </select>
+        </div>
+        <div id="stats-content"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── CHECK IN ─────────────────────────────────────────────────── -->
+  <div id="view-checkin" class="view">
+    <div class="view-bar">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="view-title">Check In</span>
+      <div style="width:36px"></div>
+    </div>
+    <div id="checkin-messages" class="checkin-messages"></div>
+    <div id="checkin-mic-area">
+      <button id="checkin-mic-btn" aria-label="Voice input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="9" y1="22" x2="15" y2="22"/>
+        </svg>
+      </button>
+      <div id="checkin-mic-label">Tap to speak</div>
+      <div class="home-text-row" style="margin-top:12px">
+        <input type="text" id="checkin-text-input" placeholder="Or type a message…" autocomplete="off">
+        <button id="checkin-text-send" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Voice Overlay (section mic buttons only) ──────────────────── -->
+  <div id="voice-overlay" class="overlay hidden" role="dialog">
+    <div class="overlay-backdrop" id="voice-backdrop"></div>
+    <div class="overlay-sheet">
+      <div class="overlay-handle"></div>
+      <div id="voice-messages" aria-live="polite"></div>
+      <div id="voice-status" class="voice-status"></div>
+      <div id="voice-input-row">
+        <button id="voice-mic-btn" aria-label="Toggle mic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+            <rect x="9" y="2" width="6" height="12" rx="3"/>
+            <path d="M5 10a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="9" y1="22" x2="15" y2="22"/>
+          </svg>
+        </button>
+        <textarea id="voice-text-input" placeholder="Or type here…" rows="1"></textarea>
+        <button id="voice-send-btn" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </button>
+        <button id="voice-close-btn" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Menu Sheet ────────────────────────────────────────────────── -->
+  <div id="menu-overlay" class="overlay hidden" role="dialog">
+    <div class="overlay-backdrop" id="menu-backdrop"></div>
+    <div class="menu-sheet">
+      <div class="overlay-handle"></div>
+<button class="menu-item" data-view="history">
+        <span class="menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 3h18v4H3z"/><path d="M3 11h18v4H3z"/><path d="M3 19h10v4H3z"/></svg>
+        </span>
+        <div class="menu-text">
+          <div class="menu-item-title">History</div>
+          <div class="menu-item-sub">Workouts, meals &amp; mood</div>
+        </div>
+      </button>
+      <button class="menu-item" data-view="current">
+        <span class="menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </span>
+        <div class="menu-text">
+          <div class="menu-item-title">Current</div>
+          <div class="menu-item-sub">Tasks, goals, priorities</div>
+        </div>
+      </button>
+      <button class="menu-item" data-view="upcoming">
+        <span class="menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </span>
+        <div class="menu-text">
+          <div class="menu-item-title">Upcoming</div>
+          <div class="menu-item-sub">Schedule &amp; calendar</div>
+        </div>
+      </button>
+      <button class="menu-item" data-view="settings">
+        <span class="menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </span>
+        <div class="menu-text">
+          <div class="menu-item-title">Settings</div>
+          <div class="menu-item-sub">Profile, appearance, privacy</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Chat Overlay (expanded home chat) ────────────────────────── -->
+  <div id="chat-overlay" class="overlay hidden" role="dialog">
+    <div class="overlay-backdrop" id="chat-backdrop"></div>
+    <div class="overlay-sheet">
+      <div class="overlay-handle"></div>
+      <div id="chat-messages" aria-live="polite"></div>
+      <div id="chat-input-row">
+        <button id="chat-mic-btn" aria-label="Voice input">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+            <rect x="9" y="2" width="6" height="12" rx="3"/>
+            <path d="M5 10a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="9" y1="22" x2="15" y2="22"/>
+          </svg>
+        </button>
+        <textarea id="chat-text-input" placeholder="Type a message…" rows="1"></textarea>
+        <button id="chat-send-btn" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Task Edit Overlay ────────────────────────────────────────── -->
+  <div id="task-edit-overlay" class="overlay hidden" role="dialog">
+    <div class="overlay-backdrop" id="task-edit-backdrop"></div>
+    <div class="overlay-sheet">
+      <div class="overlay-handle"></div>
+      <div style="padding:16px 20px 8px;font-weight:700;font-size:15px">Edit Task</div>
+      <div style="padding:0 20px 20px">
+        <div class="task-edit-field">
+          <label>Title</label>
+          <input id="te-title" type="text" placeholder="Task title">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="task-edit-field">
+            <label>Bucket</label>
+            <select id="te-bucket"></select>
+          </div>
+          <div class="task-edit-field">
+            <label>Priority</label>
+            <select id="te-priority">
+              <option value="1">P1 — Critical</option>
+              <option value="2">P2 — High</option>
+              <option value="3">P3 — Normal</option>
+              <option value="4">P4 — Low</option>
+              <option value="5">P5 — Someday</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="task-edit-field">
+            <label>Due date</label>
+            <input id="te-due" type="date">
+          </div>
+          <div class="task-edit-field">
+            <label>Energy</label>
+            <select id="te-energy">
+              <option value="">Any</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="task-edit-field">
+          <label>Notes</label>
+          <textarea id="te-description" placeholder="Optional notes…"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button id="te-save" style="flex:1;padding:12px;border-radius:12px;background:var(--accent);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer">Save</button>
+          <button id="te-cancel" style="flex:1;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:none;font-size:14px;cursor:pointer">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Calendar Event Edit Overlay ─────────────────────────────── -->
+  <div id="cal-event-overlay" class="overlay hidden" role="dialog">
+    <div class="overlay-backdrop" id="cal-event-backdrop"></div>
+    <div class="overlay-sheet">
+      <div class="overlay-handle"></div>
+      <div style="padding:16px 20px 8px;font-weight:700;font-size:15px" id="cal-event-overlay-title">Event</div>
+      <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Title</label>
+          <input id="cal-event-title" type="text" placeholder="Event title" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;box-sizing:border-box">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Date</label>
+            <input id="cal-event-date" type="date" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;box-sizing:border-box">
+          </div>
+          <div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Start</label>
+            <input id="cal-event-start" type="time" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">End</label>
+            <input id="cal-event-end" type="time" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button id="cal-event-save" style="flex:1;padding:12px;border-radius:12px;background:var(--accent);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer">Save</button>
+          <button id="cal-event-cancel" style="flex:1;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:none;font-size:14px;cursor:pointer">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Login Screen ──────────────────────────────────────────────── -->
+  <div id="login-screen" class="login-screen hidden">
+    <div class="login-card">
+      <div class="login-logo">N</div>
+      <div class="login-title">Nertia</div>
+      <div class="login-subtitle">Who's using the app?</div>
+      <div id="login-user-list" class="login-user-list"></div>
+      <label class="login-remember">
+        <input type="checkbox" id="login-remember-me" checked>
+        <span>Remember me for 30 days</span>
+      </label>
+    </div>
+  </div>
+
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

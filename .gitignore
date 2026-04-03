@@ -1,0 +1,42 @@
+# Secrets & credentials
+.env
+
+# Database (contains personal data — never commit)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Personal data directories
+data/
+uploads/
+logs/
+ntfy/
+radicale/
+
+# Claude Code local settings
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/

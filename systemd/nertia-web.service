@@ -1,0 +1,15 @@
+[Unit]
+Description=Nertia PWA Backend
+After=network.target radicale.service ntfy.service
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/nertia
+ExecStart=/path/to/nertia/venv/bin/uvicorn web.app:app --host 0.0.0.0 --port 8000 --workers 1
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONPATH=/path/to/nertia
+
+[Install]
+WantedBy=multi-user.target

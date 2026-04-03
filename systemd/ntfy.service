@@ -1,0 +1,13 @@
+[Unit]
+Description=ntfy notification server
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+ExecStart=/usr/local/bin/ntfy serve --config /path/to/nertia/ntfy/server.yml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+claude-agent-sdk
+anthropic
+aiosqlite
+python-dotenv
+httpx
+caldav
+radicale
+fastapi
+uvicorn[standard]
+pillow
+slowapi>=0.1.9

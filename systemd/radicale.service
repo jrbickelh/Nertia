@@ -1,0 +1,14 @@
+[Unit]
+Description=Radicale CalDAV Server
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/nertia
+ExecStart=/path/to/nertia/venv/bin/python -m radicale --config /path/to/nertia/radicale/config
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
